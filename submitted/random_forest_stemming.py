@@ -1,20 +1,15 @@
+#SUBMITTED
+
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor, BaggingRegressor
-
 from nltk.stem.snowball import SnowballStemmer
-from nltk.stem.wordnet import WordNetLemmatizer
 
-# stemming: (heuristic cutting suffix)
-# go, goes, going = go
-# eat, eats, eaten = eat
+# stemming:
+# go, goes, going = go, but NOT went - requires lemmatization
+# eat, eats, eaten = eat, but NOT eaten - requires lemmatization 
 # snowball is a language widly used to implement stemming algorithms
-#
-# lemmatization: (nltk uses Princeton's wordNet, a lexi database/dictionary)
-# went = go
-# ate = eat
 stemmer = SnowballStemmer('english')
-lmtzr = WordNetLemmatizer()
 
 df_train = pd.read_csv('input\\train.csv', encoding="ISO-8859-1")
 df_test = pd.read_csv('input\\test.csv', encoding="ISO-8859-1")
@@ -26,10 +21,6 @@ num_train = df_train.shape[0] # number of inputs in training set
 # take a sentence/string, stem all words within it
 def str_stemmer(s):
     return " ".join([stemmer.stem(word) for word in s.lower().split()])
-    
-# take a sentence/string, lementize all words within it
-def str_lmtzr(s):
-    return " ".join([lmtzr.lemmatize(word) for word in s.lower().split()])
 
 # return the number of common words in two sentences/strings
 def str_common_word(str1, str2):
@@ -40,7 +31,6 @@ df_all = pd.concat((df_train, df_test), axis=0, ignore_index=True)
 
 # inner join train-test set with "product description" on key "product_uid"
 df_all = pd.merge(df_all, df_pro_desc, how='left', on='product_uid')
-print "\nfinished reading in and pre-processing data...\n"
 
 # create additional columns/features for random forest classification
 #
@@ -48,13 +38,6 @@ print "\nfinished reading in and pre-processing data...\n"
 df_all['search_term'] = df_all['search_term'].map(lambda x:str_stemmer(x))
 df_all['product_title'] = df_all['product_title'].map(lambda x:str_stemmer(x))
 df_all['product_description'] = df_all['product_description'].map(lambda x:str_stemmer(x))
-print "\nfinished performing stemming to features...\n"
-
-# 1.5 - perform lementization on features "search_term", "product_title" and "product_description"
-df_all['search_term'] = df_all['search_term'].map(lambda x:str_lmtzr(x))
-df_all['product_title'] = df_all['product_title'].map(lambda x:str_lmtzr(x))
-df_all['product_description'] = df_all['product_description'].map(lambda x:str_lmtzr(x))
-print "\nfinished performing lemmentization to features...\n"
 
 #
 # 2 - calculate length of query sent by user
@@ -87,16 +70,12 @@ id_test = df_test['id']
 y_train = df_train['relevance'].values
 X_train = df_train.drop(['id','relevance'],axis=1).values
 X_test = df_test.drop(['id','relevance'],axis=1).values
-print "\nfinished doing train/test split...\n"
 
 #
 # 9 - train random forest model and use it for prediction
-rf = RandomForestRegressor(n_estimators=15, max_depth=8, random_state=0)
+rf = RandomForestRegressor(n_estimators=15, max_depth=6, random_state=0)
 clf = BaggingRegressor(rf, n_estimators=45, max_samples=0.1, random_state=25)
 clf.fit(X_train, y_train)
-print "\nfinished fitting random forest...\n"
-
 y_pred = clf.predict(X_test)
-print "\nfinished generating predictions...\n"
 
-pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('output\\submission_stem_lemmatization.csv',index=False)
+pd.DataFrame({"id": id_test, "relevance": y_pred}).to_csv('output\\submission.csv',index=False)
