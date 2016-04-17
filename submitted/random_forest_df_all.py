@@ -213,7 +213,7 @@ feature_builder = pipeline.Pipeline([
                         'cst': 1.0,
                         'txt1': 0.5,
                         'txt2': 0.25,
-                        'txt3': 0.55,
+                        'txt3': 0.05,
                         'txt4': 0.5
                     }
                 #,n_jobs = -1
@@ -224,8 +224,8 @@ X_train_feature_engineered = feature_builder.fit_transform(X_train)
 X_test_feature_engineered = feature_builder.fit_transform(X_test)
 print("--- DONE with ALL feature engineering: %s minutes ---" % round(((time.time() - start_time)/60),2))
 
-param_grid = {'max_features': range(6,12), 'max_depth': range(16,22)}
-model = grid_search.GridSearchCV(estimator = rfr, param_grid = param_grid, n_jobs = -1, cv = 2, verbose = 20, scoring=RMSE)
+param_grid = {'max_features': range(6,11), 'max_depth': range(16,21)}
+model = grid_search.GridSearchCV(estimator = rfr, param_grid = param_grid, n_jobs = -1, cv = 5, verbose = 20, scoring=RMSE)
 
 model.fit(X_train_feature_engineered, y_train)
 

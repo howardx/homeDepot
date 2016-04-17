@@ -229,7 +229,7 @@ clf = pipeline.Pipeline([
                         'cst': 1.0,
                         'txt1': 0.5,
                         'txt2': 0.25,
-                        'txt3': 0.0,
+                        'txt3': 0.05,
                         'txt4': 0.5,
                         'txt5': 0.5,
                         'txt6': 0.5
@@ -237,9 +237,10 @@ clf = pipeline.Pipeline([
                 n_jobs = 1
                 )), 
         ('rfr', rfr)])
-param_grid = {'rfr__max_features': [24], 'rfr__max_depth': [30]}
-model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid, n_jobs = -1, cv = 2, verbose = 20, scoring=RMSE)
+param_grid = {'rfr__max_features': range(18,25), 'rfr__max_depth': (25,32)}
+model = grid_search.GridSearchCV(estimator = clf, param_grid = param_grid, n_jobs = -1, cv = 5, verbose = 20, scoring=RMSE)
 model.fit(X_train, y_train)
+
 print(model.best_params_)
 print(model.best_score_)
 
